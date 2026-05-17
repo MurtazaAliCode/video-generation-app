@@ -1,30 +1,30 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
+import { lemonSqueezySetup, createCheckout } from '@lemonsqueezy/lemonsqueezy.js';
 import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Initialize LemonSqueezy
+lemonSqueezySetup({
+  apiKey: process.env.LEMONSQUEEZY_API_KEY!,
+});
 
-// Pricing Plans
+// LemonSqueezy Variant IDs (You will get these after creating products in LemonSqueezy)
 const PLANS = {
   starter: {
     name: 'Starter',
-    price: 499, // $4.99 in cents
     credits: 50,
-    priceId: 'price_starter',
+    variantId: process.env.LEMONSQUEEZY_VARIANT_STARTER!, // e.g. '123456'
   },
   pro: {
     name: 'Pro',
-    price: 1499, // $14.99 in cents
     credits: 150,
-    priceId: 'price_pro',
+    variantId: process.env.LEMONSQUEEZY_VARIANT_PRO!, // e.g. '123457'
   },
   elite: {
     name: 'Elite',
-    price: 2999, // $29.99 in cents
     credits: 350,
-    priceId: 'price_elite',
+    variantId: process.env.LEMONSQUEEZY_VARIANT_ELITE!, // e.g. '123458'
   },
 };
 
@@ -42,36 +42,38 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `VidFlow ${selectedPlan.name} Plan`,
-              description: `${selectedPlan.credits} Credits - AI Video Generation`,
-              images: [],
-            },
-            unit_amount: selectedPlan.price,
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        userId,
-        plan,
-        credits: selectedPlan.credits.toString(),
-      },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true&plan=${plan}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/#pricing`,
-    });
+    if (!process.env.LEMONSQUEEZY_STORE_ID) {
+      throw new Error('Missing LEMONSQUEEZY_STORE_ID');
+    }
+    if (!selectedPlan.variantId) {
+      throw new Error(`Missing LemonSqueezy Variant ID for plan: ${plan}`);
+    }
 
-    return NextResponse.json({ url: session.url });
+    // Create LemonSqueezy Checkout
+    const checkout = await createCheckout(
+      process.env.LEMONSQUEEZY_STORE_ID,
+      selectedPlan.variantId,
+      {
+        checkoutData: {
+          custom: {
+            userId: userId,
+            plan: plan,
+            credits: selectedPlan.credits.toString(),
+          },
+        },
+        productOptions: {
+          redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true&plan=${plan}`,
+        },
+      }
+    );
+
+    if (checkout.error) {
+      throw new Error(checkout.error.message);
+    }
+
+    return NextResponse.json({ url: checkout.data?.data.attributes.url });
   } catch (error: any) {
-    console.error('Stripe Error:', error);
+    console.error('LemonSqueezy Checkout Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
