@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,50 +7,100 @@ export const dynamic = 'force-dynamic';
 const GUMROAD_SELLER_ID = process.env.GUMROAD_SELLER_ID || '';
 
 export async function POST(req: Request) {
+  let rawBody = '';
+  let parsedData: Record<string, any> = {};
+  let status = 200;
+  let errorMessage: string | null = null;
+
   try {
-    // Gumroad sends data as application/x-www-form-urlencoded
-    const formData = await req.formData();
-    const data: Record<string, string> = {};
-    formData.forEach((value, key) => {
-      data[key] = value.toString();
-    });
+    // Read raw body as text first to avoid payload parsing issues
+    rawBody = await req.text();
+    
+    // Parse the body. Gumroad sends application/x-www-form-urlencoded
+    try {
+      const searchParams = new URLSearchParams(rawBody);
+      searchParams.forEach((value, key) => {
+        parsedData[key] = value;
+      });
+    } catch (parseErr: any) {
+      console.error('⚠️ URLSearchParams parsing failed, trying JSON:', parseErr.message);
+      try {
+        parsedData = JSON.parse(rawBody);
+      } catch (jsonErr: any) {
+        console.error('⚠️ JSON parsing also failed');
+      }
+    }
 
-    console.log('📦 Gumroad Webhook Received:', JSON.stringify(data, null, 2));
+    console.log('📦 Gumroad Webhook Raw Body:', rawBody);
+    console.log('📦 Gumroad Webhook Parsed:', JSON.stringify(parsedData, null, 2));
 
-    // Basic seller verification — ensure ping is from our Gumroad account
-    if (GUMROAD_SELLER_ID && data.seller_id !== GUMROAD_SELLER_ID) {
-      console.error('❌ Invalid seller_id — possible fake request');
+    // Check seller verification
+    if (GUMROAD_SELLER_ID && parsedData.seller_id !== GUMROAD_SELLER_ID) {
+      errorMessage = `Invalid seller_id: expected ${GUMROAD_SELLER_ID}, got ${parsedData.seller_id}`;
+      console.error('❌ ' + errorMessage);
+      status = 401;
+      
+      // Save log before exiting
+      await prisma.webhookLog.create({
+        data: {
+          provider: 'gumroad',
+          payload: JSON.stringify({ rawBody, parsedData }),
+          error: errorMessage,
+          status,
+        },
+      });
+
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Only process successful sales (not refunds/cancellations)
-    const saleRefunded = data.refunded === 'true';
+    const saleRefunded = parsedData.refunded === 'true';
     if (saleRefunded) {
       console.log('↩️ Refund detected — skipping credit addition');
+      await prisma.webhookLog.create({
+        data: {
+          provider: 'gumroad',
+          payload: JSON.stringify({ rawBody, parsedData }),
+          error: 'Refund skipped',
+          status: 200,
+        },
+      });
       return NextResponse.json({ received: true, action: 'refund_skipped' });
     }
 
-    // Get user ID passed via checkout URL as ?clerk_user_id=xxx
-    const userId = data.custom_fields
+    // Identify user
+    const userId = parsedData.custom_fields
       ? (() => {
           try {
-            const cf = JSON.parse(data.custom_fields);
-            return cf.clerk_user_id || data.clerk_user_id || null;
+            const cf = JSON.parse(parsedData.custom_fields);
+            return cf.clerk_user_id || parsedData.clerk_user_id || null;
           } catch {
-            return data.clerk_user_id || null;
+            return parsedData.clerk_user_id || null;
           }
         })()
-      : data.clerk_user_id || null;
+      : parsedData.clerk_user_id || null;
 
-    const customerEmail = data.email || '';
-    const permalink = (data.permalink || '').toLowerCase();
+    const customerEmail = parsedData.email || '';
+    const permalink = (parsedData.permalink || '').toLowerCase();
 
     if (!userId && !customerEmail) {
-      console.error('❌ Missing clerk_user_id and email in Gumroad webhook');
+      errorMessage = 'Missing clerk_user_id and email in Gumroad webhook';
+      console.error('❌ ' + errorMessage);
+      status = 400;
+
+      await prisma.webhookLog.create({
+        data: {
+          provider: 'gumroad',
+          payload: JSON.stringify({ rawBody, parsedData }),
+          error: errorMessage,
+          status,
+        },
+      });
+
       return NextResponse.json({ error: 'Missing user identifier' }, { status: 400 });
     }
 
-    // Map product permalink to credits + plan name
+    // Plan mapping
     let credits = 50;
     let plan = 'starter';
 
@@ -66,7 +115,6 @@ export async function POST(req: Request) {
       plan = 'starter';
     }
 
-    // Add credits to user in database
     if (userId) {
       await prisma.user.upsert({
         where: { clerkId: userId },
@@ -83,7 +131,7 @@ export async function POST(req: Request) {
       });
       console.log(`✅ Gumroad: Added ${credits} credits (${plan} plan) to user ${userId} (clerkId)`);
     } else if (customerEmail) {
-      // Fallback to searching by email
+      // Find user by email
       const dbUser = await prisma.user.findUnique({
         where: { email: customerEmail }
       });
@@ -98,15 +146,53 @@ export async function POST(req: Request) {
         });
         console.log(`✅ Gumroad: Added ${credits} credits (${plan} plan) to user ${customerEmail} (email)`);
       } else {
-        console.error(`❌ User with email ${customerEmail} not found in database. Cannot add credits.`);
+        errorMessage = `User with email ${customerEmail} not found in database. Cannot add credits.`;
+        console.error('❌ ' + errorMessage);
+        status = 404;
+
+        await prisma.webhookLog.create({
+          data: {
+            provider: 'gumroad',
+            payload: JSON.stringify({ rawBody, parsedData }),
+            error: errorMessage,
+            status,
+          },
+        });
+
         return NextResponse.json({ error: 'User not found for email fallback' }, { status: 404 });
       }
     }
 
+    // Save success log
+    await prisma.webhookLog.create({
+      data: {
+        provider: 'gumroad',
+        payload: JSON.stringify({ rawBody, parsedData, creditsAdded: credits, plan, userId, customerEmail }),
+        error: null,
+        status: 200,
+      },
+    });
+
     return NextResponse.json({ received: true, credits_added: credits, plan });
 
   } catch (err: any) {
-    console.error('❌ Gumroad Webhook Error:', err.message);
+    errorMessage = `Webhook error: ${err.message}`;
+    console.error('❌ ' + errorMessage);
+    status = 500;
+
+    try {
+      await prisma.webhookLog.create({
+        data: {
+          provider: 'gumroad',
+          payload: JSON.stringify({ rawBody, parsedData }),
+          error: errorMessage,
+          status: 500,
+        },
+      });
+    } catch (logErr) {
+      console.error('❌ Failed to save error to WebhookLog:', logErr);
+    }
+
     return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

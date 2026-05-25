@@ -29,3 +29,13 @@ model Video {
   cost      Int      // 3 or 7 credits
   createdAt DateTime @default(now())
 }
+
+model WebhookLog {
+  id        String   @id @default(uuid())
+  provider  String   // "gumroad"
+  payload   String   @db.Text
+  error     String?  @db.Text
+  status    Int
+  createdAt DateTime @default(now())
+}
+
