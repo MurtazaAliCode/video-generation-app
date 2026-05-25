@@ -49,6 +49,8 @@ export async function POST(req: Request) {
       throw new Error(`Missing LemonSqueezy Variant ID for plan: ${plan}`);
     }
 
+    const { origin } = new URL(req.url);
+
     // Create LemonSqueezy Checkout
     const checkout = await createCheckout(
       process.env.LEMONSQUEEZY_STORE_ID,
@@ -62,7 +64,7 @@ export async function POST(req: Request) {
           },
         },
         productOptions: {
-          redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true&plan=${plan}`,
+          redirectUrl: `${origin}/dashboard?success=true&plan=${plan}`,
         },
       }
     );
