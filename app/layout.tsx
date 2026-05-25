@@ -62,7 +62,9 @@ export default async function RootLayout({
               </div>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 {!userId ? (
-                  <SignInButton mode="modal"><button className="btn-primary" style={{ padding: "0.6rem 1.5rem", fontSize: "0.9rem" }}>Log In / Sign Up</button></SignInButton>
+                  <SignInButton mode="modal">
+                    <button className="btn-primary" style={{ padding: "0.6rem 1.5rem", fontSize: "0.9rem" }}>Log In / Sign Up</button>
+                  </SignInButton>
                 ) : (
                   <>
                     <a href="/dashboard" className="btn-outline mobile-hide" style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", border: "1px solid var(--accent-1)" }}>Go to Dashboard</a>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Smart Credit System - profitable at every tier
 const VIDEO_OPTIONS = [
@@ -17,7 +17,23 @@ export default function Dashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [selectedOption, setSelectedOption] = useState(VIDEO_OPTIONS[0]);
-  const [credits, setCredits] = useState(15); // Free credits on signup
+  const [credits, setCredits] = useState(15); // Default free credits
+
+  // Fetch actual credits from database on mount
+  useEffect(() => {
+    async function fetchCredits() {
+      try {
+        const res = await fetch('/api/user');
+        if (res.ok) {
+          const data = await res.json();
+          setCredits(data.credits);
+        }
+      } catch (e) {
+        console.error('Error fetching credits:', e);
+      }
+    }
+    fetchCredits();
+  }, []);
 
   const handleGenerate = async () => {
     if (credits < selectedOption.credits) {
@@ -26,6 +42,7 @@ export default function Dashboard() {
     }
 
     setIsGenerating(true);
+    // Optimistic local update
     setCredits(prev => prev - selectedOption.credits);
 
     try {
@@ -40,6 +57,13 @@ export default function Dashboard() {
       } else {
         // Fallback demo video
         setVideoUrl("https://media.w3.org/2010/05/sintel/trailer.mp4");
+      }
+
+      // Re-fetch user details to make sure database credits are in sync
+      const userRes = await fetch('/api/user');
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        setCredits(userData.credits);
       }
     } catch (e) {
       setVideoUrl("https://media.w3.org/2010/05/sintel/trailer.mp4");
