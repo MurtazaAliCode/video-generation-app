@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ClerkProvider, SignInButton, UserButton } from '@clerk/nextjs';
-import { auth } from '@clerk/nextjs/server';
+import { ClerkProvider } from '@clerk/nextjs';
+import NavbarAuth from "./NavbarAuth";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,13 +8,11 @@ export const metadata: Metadata = {
   description: "Transform your prompts into cinematic reality with AI.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { userId } = await auth();
-
   return (
     <ClerkProvider>
       <html lang="en">
@@ -61,16 +59,7 @@ export default async function RootLayout({
                   <a href="/how-it-works">How it works</a>
               </div>
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                {!userId ? (
-                  <SignInButton mode="modal">
-                    <button className="btn-primary" style={{ padding: "0.6rem 1.5rem", fontSize: "0.9rem" }}>Log In / Sign Up</button>
-                  </SignInButton>
-                ) : (
-                  <>
-                    <a href="/dashboard" className="btn-outline mobile-hide" style={{ padding: "0.5rem 1rem", fontSize: "0.8rem", border: "1px solid var(--accent-1)" }}>Go to Dashboard</a>
-                    <UserButton />
-                  </>
-                )}
+                <NavbarAuth />
               </div>
           </nav>
           {children}
