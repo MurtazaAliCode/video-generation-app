@@ -1,30 +1,23 @@
 import { NextResponse } from 'next/server';
-import { lemonSqueezySetup, createCheckout } from '@lemonsqueezy/lemonsqueezy.js';
 import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
-// Initialize LemonSqueezy
-lemonSqueezySetup({
-  apiKey: process.env.LEMONSQUEEZY_API_KEY!,
-});
-
-// LemonSqueezy Variant IDs (You will get these after creating products in LemonSqueezy)
 const PLANS = {
   starter: {
     name: 'Starter',
     credits: 50,
-    variantId: process.env.LEMONSQUEEZY_VARIANT_STARTER!, // e.g. '123456'
+    url: process.env.GUMROAD_URL_STARTER!,
   },
   pro: {
     name: 'Pro',
     credits: 150,
-    variantId: process.env.LEMONSQUEEZY_VARIANT_PRO!, // e.g. '123457'
+    url: process.env.GUMROAD_URL_PRO!,
   },
   elite: {
     name: 'Elite',
     credits: 350,
-    variantId: process.env.LEMONSQUEEZY_VARIANT_ELITE!, // e.g. '123458'
+    url: process.env.GUMROAD_URL_ELITE!,
   },
 };
 
@@ -42,40 +35,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    if (!process.env.LEMONSQUEEZY_STORE_ID) {
-      throw new Error('Missing LEMONSQUEEZY_STORE_ID');
-    }
-    if (!selectedPlan.variantId) {
-      throw new Error(`Missing LemonSqueezy Variant ID for plan: ${plan}`);
+    if (!selectedPlan.url) {
+      throw new Error(`Missing Gumroad URL for plan: ${plan}`);
     }
 
-    const { origin } = new URL(req.url);
+    // Construct Gumroad payment link with custom clerk_user_id parameter tracking the user
+    const redirectUrl = `${selectedPlan.url}?clerk_user_id=${userId}`;
 
-    // Create LemonSqueezy Checkout
-    const checkout = await createCheckout(
-      process.env.LEMONSQUEEZY_STORE_ID,
-      selectedPlan.variantId,
-      {
-        checkoutData: {
-          custom: {
-            userId: userId,
-            plan: plan,
-            credits: selectedPlan.credits.toString(),
-          },
-        },
-        productOptions: {
-          redirectUrl: `${origin}/dashboard?success=true&plan=${plan}`,
-        },
-      }
-    );
-
-    if (checkout.error) {
-      throw new Error(checkout.error.message);
-    }
-
-    return NextResponse.json({ url: checkout.data?.data.attributes.url });
+    return NextResponse.json({ url: redirectUrl });
   } catch (error: any) {
-    console.error('LemonSqueezy Checkout Error:', error);
+    console.error('Gumroad Checkout Error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
