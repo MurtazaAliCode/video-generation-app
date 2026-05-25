@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +24,8 @@ const PLANS = {
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
-    if (!userId) {
+    const user = await currentUser();
+    if (!userId || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -39,8 +40,13 @@ export async function POST(req: Request) {
       throw new Error(`Missing Gumroad URL for plan: ${plan}`);
     }
 
-    // Construct Gumroad payment link with custom clerk_user_id parameter tracking the user
-    const redirectUrl = `${selectedPlan.url}?clerk_user_id=${userId}`;
+    // Get primary email
+    const emailAddress = user.emailAddresses.find(
+      (email) => email.id === user.primaryEmailAddressId
+    )?.emailAddress || '';
+
+    // Construct Gumroad payment link with custom clerk_user_id AND email for prefilling
+    const redirectUrl = `${selectedPlan.url}?clerk_user_id=${userId}&email=${encodeURIComponent(emailAddress)}`;
 
     return NextResponse.json({ url: redirectUrl });
   } catch (error: any) {

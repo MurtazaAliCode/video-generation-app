@@ -46,9 +46,9 @@ export async function POST(req: Request) {
     const customerEmail = data.email || '';
     const permalink = (data.permalink || '').toLowerCase();
 
-    if (!userId) {
-      console.error('❌ Missing clerk_user_id in Gumroad webhook');
-      return NextResponse.json({ error: 'Missing clerk_user_id' }, { status: 400 });
+    if (!userId && !customerEmail) {
+      console.error('❌ Missing clerk_user_id and email in Gumroad webhook');
+      return NextResponse.json({ error: 'Missing user identifier' }, { status: 400 });
     }
 
     // Map product permalink to credits + plan name
@@ -67,21 +67,42 @@ export async function POST(req: Request) {
     }
 
     // Add credits to user in database
-    await prisma.user.upsert({
-      where: { clerkId: userId },
-      update: {
-        credits: { increment: credits },
-        plan: plan,
-      },
-      create: {
-        clerkId: userId,
-        email: customerEmail,
-        credits: credits,
-        plan: plan,
-      },
-    });
+    if (userId) {
+      await prisma.user.upsert({
+        where: { clerkId: userId },
+        update: {
+          credits: { increment: credits },
+          plan: plan,
+        },
+        create: {
+          clerkId: userId,
+          email: customerEmail,
+          credits: credits,
+          plan: plan,
+        },
+      });
+      console.log(`✅ Gumroad: Added ${credits} credits (${plan} plan) to user ${userId} (clerkId)`);
+    } else if (customerEmail) {
+      // Fallback to searching by email
+      const dbUser = await prisma.user.findUnique({
+        where: { email: customerEmail }
+      });
+      
+      if (dbUser) {
+        await prisma.user.update({
+          where: { email: customerEmail },
+          data: {
+            credits: { increment: credits },
+            plan: plan,
+          }
+        });
+        console.log(`✅ Gumroad: Added ${credits} credits (${plan} plan) to user ${customerEmail} (email)`);
+      } else {
+        console.error(`❌ User with email ${customerEmail} not found in database. Cannot add credits.`);
+        return NextResponse.json({ error: 'User not found for email fallback' }, { status: 404 });
+      }
+    }
 
-    console.log(`✅ Gumroad: Added ${credits} credits (${plan} plan) to user ${userId}`);
     return NextResponse.json({ received: true, credits_added: credits, plan });
 
   } catch (err: any) {
