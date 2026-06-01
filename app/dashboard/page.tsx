@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Smart Credit System - profitable at every tier
 const VIDEO_OPTIONS = [
@@ -18,6 +18,26 @@ export default function Dashboard() {
   const [videoUrl, setVideoUrl] = useState("");
   const [selectedOption, setSelectedOption] = useState(VIDEO_OPTIONS[0]);
   const [credits, setCredits] = useState(15); // Default free credits
+
+  // AI Assistant States
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState([
+    {
+      sender: 'assistant',
+      content: 'Assalam-o-Alaikum! Main aapka VidFlow AI Guide hoon. 🌟\n\nMujhse poochein ke behtareen AI video prompts kaise likhein, zaban ka istemal kaise karein, ya platform ke credits ke baare me. Main Roman Urdu, Urdu aur English teeno me jawab de sakta hoon!'
+    }
+  ]);
+  const [isAssistantTyping, setIsAssistantTyping] = useState(false);
+  
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll chat to bottom
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages, isAssistantTyping]);
 
   // Fetch actual credits from database on mount
   useEffect(() => {
@@ -72,8 +92,340 @@ export default function Dashboard() {
     }
   };
 
+  const handleSendChatMessage = async (textToSend?: string) => {
+    const messageContent = textToSend || chatInput;
+    if (!messageContent.trim()) return;
+
+    // Add user message
+    const updatedMessages = [...chatMessages, { sender: 'user', content: messageContent }];
+    setChatMessages(updatedMessages);
+    if (!textToSend) setChatInput("");
+    setIsAssistantTyping(true);
+
+    try {
+      const res = await fetch('/api/assistant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessages }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setChatMessages(prev => [...prev, { sender: 'assistant', content: data.reply }]);
+      } else {
+        throw new Error('Failed response');
+      }
+    } catch (e) {
+      setChatMessages(prev => [...prev, { 
+        sender: 'assistant', 
+        content: 'Kuch technical error aya hai response lane me. Please dobara koshish karein!' 
+      }]);
+    } finally {
+      setIsAssistantTyping(false);
+    }
+  };
+
   return (
     <div className="dashboard-container">
+      {/* Sleek Custom Style overrides */}
+      <style>{`
+        /* Floating Chat Button */
+        .chat-bubble {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+          box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 1.5rem;
+          cursor: pointer;
+          z-index: 1000;
+          transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          animation: chat-pulse 2.5s infinite;
+        }
+        .chat-bubble:hover {
+          transform: scale(1.1) rotate(5deg);
+          box-shadow: 0 12px 32px rgba(99, 102, 241, 0.6);
+        }
+        @keyframes chat-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
+          70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        /* Glassmorphic Chat Drawer */
+        .chat-drawer {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 400px;
+          max-width: 90%;
+          height: 100%;
+          background: rgba(13, 15, 30, 0.75);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border-left: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+          z-index: 1001;
+          display: flex;
+          flex-direction: column;
+          transform: translateX(100%);
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .chat-drawer.open {
+          transform: translateX(0);
+        }
+        .chat-header {
+          padding: 1.25rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.02);
+        }
+        .chat-header h3 {
+          margin: 0;
+          font-size: 1.1rem;
+          color: white;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .active-dot {
+          width: 8px;
+          height: 8px;
+          background-color: #10B981;
+          border-radius: 50%;
+          box-shadow: 0 0 8px #10B981;
+        }
+        .close-chat {
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          font-size: 1.25rem;
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+        .close-chat:hover {
+          color: white;
+        }
+
+        /* Message Scroll Area */
+        .chat-messages {
+          flex: 1;
+          overflow-y: auto;
+          padding: 1.25rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+        .chat-messages::-webkit-scrollbar {
+          width: 5px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 4px;
+        }
+        .message-bubble {
+          max-width: 85%;
+          padding: 0.85rem 1.1rem;
+          border-radius: 16px;
+          font-size: 0.88rem;
+          line-height: 1.45;
+          word-break: break-word;
+          white-space: pre-line;
+        }
+        .message-bubble.assistant {
+          align-self: flex-start;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          color: #E2E8F0;
+          border-bottom-left-radius: 4px;
+        }
+        .message-bubble.user {
+          align-self: flex-end;
+          background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+          border: 1px solid rgba(99, 102, 241, 0.3);
+          color: white;
+          border-bottom-right-radius: 4px;
+        }
+
+        /* Chat Quick Action Suggestions */
+        .suggestions-container {
+          display: flex;
+          gap: 0.5rem;
+          overflow-x: auto;
+          padding: 0.5rem 1.25rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .suggestions-container::-webkit-scrollbar {
+          display: none;
+        }
+        .suggestion-chip {
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 20px;
+          padding: 0.4rem 0.8rem;
+          font-size: 0.78rem;
+          color: var(--text-secondary);
+          white-space: nowrap;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .suggestion-chip:hover {
+          background: rgba(99, 102, 241, 0.15);
+          border-color: rgba(99, 102, 241, 0.4);
+          color: white;
+        }
+
+        /* Input Form */
+        .chat-footer {
+          padding: 1rem 1.25rem;
+          background: rgba(0, 0, 0, 0.2);
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          display: flex;
+          gap: 0.75rem;
+          align-items: center;
+        }
+        .chat-input {
+          flex: 1;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 12px;
+          padding: 0.75rem 1rem;
+          color: white;
+          font-size: 0.88rem;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+        .chat-input:focus {
+          border-color: var(--accent-1);
+        }
+        .send-chat-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+          border: none;
+          color: white;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          transition: opacity 0.2s;
+        }
+        .send-chat-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        /* Typing Dots Animation */
+        .typing-dots {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 0.25rem 0.5rem;
+        }
+        .typing-dot {
+          width: 6px;
+          height: 6px;
+          background: #A0AEC0;
+          border-radius: 50%;
+          animation: typing-dot 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing-dot {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+      `}</style>
+
+      {/* Floating Chat Trigger */}
+      <div 
+        className="chat-bubble" 
+        onClick={() => setIsChatOpen(!isChatOpen)}
+        title="Open VidFlow Assistant"
+      >
+        💬
+      </div>
+
+      {/* Slide-over Assistant Drawer */}
+      <div className={`chat-drawer ${isChatOpen ? 'open' : ''}`}>
+        <div className="chat-header">
+          <h3>
+            <span className="active-dot"></span>
+            VidFlow AI Guide
+          </h3>
+          <button className="close-chat" onClick={() => setIsChatOpen(false)}>✕</button>
+        </div>
+
+        <div className="chat-messages">
+          {chatMessages.map((msg, index) => (
+            <div key={index} className={`message-bubble ${msg.sender}`}>
+              {msg.content}
+            </div>
+          ))}
+          {isAssistantTyping && (
+            <div className="message-bubble assistant">
+              <div className="typing-dots">
+                <span className="typing-dot"></span>
+                <span className="typing-dot"></span>
+                <span className="typing-dot"></span>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Suggestion Chips to engage user easily */}
+        <div className="suggestions-container">
+          <button 
+            className="suggestion-chip"
+            onClick={() => handleSendChatMessage("Give me a great prompt example for Wan 2.1")}
+          >
+            💡 Prompt Idea
+          </button>
+          <button 
+            className="suggestion-chip"
+            onClick={() => handleSendChatMessage("Kya main Urdu/Roman Urdu me prompt de sakta hoon?")}
+          >
+            🇵🇰 Urdu Guide
+          </button>
+          <button 
+            className="suggestion-chip"
+            onClick={() => handleSendChatMessage("What are the credit rates and upgrade plans?")}
+          >
+            🔋 Credits & Price
+          </button>
+        </div>
+
+        <div className="chat-footer">
+          <input
+            type="text"
+            className="chat-input"
+            placeholder="Type your question..."
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendChatMessage()}
+          />
+          <button 
+            className="send-chat-btn" 
+            onClick={() => handleSendChatMessage()}
+            disabled={!chatInput.trim() || isAssistantTyping}
+          >
+            🚀
+          </button>
+        </div>
+      </div>
+
       {/* Sidebar */}
       <aside className="sidebar">
         <div style={{ flex: 1, marginTop: "4rem" }}>
