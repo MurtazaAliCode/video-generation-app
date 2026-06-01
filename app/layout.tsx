@@ -24,24 +24,7 @@ export default function RootLayout({
           </div>
           <nav>
               <a href="/" className="logo" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white', fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-1px' }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M4 12V6C4 4.89543 4.89543 4 6 4H18C19.1046 4 20 4.89543 20 6V18C20 19.1046 19.1046 20 18 20H6C4.89543 20 4 19.1046 4 18V12Z" fill="url(#paint0_linear)" fillOpacity="0.1" stroke="url(#paint1_linear)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9.5 9.5L15.5 12L9.5 14.5V9.5Z" fill="url(#paint2_linear)" />
-                  <defs>
-                    <linearGradient id="paint0_linear" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#6366F1"/>
-                      <stop offset="1" stopColor="#8B5CF6"/>
-                    </linearGradient>
-                    <linearGradient id="paint1_linear" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#6366F1"/>
-                      <stop offset="1" stopColor="#E879F9"/>
-                    </linearGradient>
-                    <linearGradient id="paint2_linear" x1="9.5" y1="9.5" x2="15.5" y2="14.5" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#ffffff"/>
-                      <stop offset="1" stopColor="#E2E8F0"/>
-                    </linearGradient>
-                  </defs>
-                </svg>
+                <img src="/logo.png" alt="VidFlow Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
                 VidFlow
               </a>
               <input type="checkbox" id="menu-toggle" style={{ display: 'none' }} />
