@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [chatMessages, setChatMessages] = useState([
     {
       sender: 'assistant',
-      content: 'Assalam-o-Alaikum! Main aapka VidFlow AI Guide hoon. 🌟\n\nMujhse poochein ke behtareen AI video prompts kaise likhein, zaban ka istemal kaise karein, ya platform ke credits ke baare me. Main Roman Urdu, Urdu aur English teeno me jawab de sakta hoon!'
+      content: 'Welcome to VidFlow! I am your AI Guide. 🌟\n\nAsk me anything about creating beautiful AI videos, crafting prompts, or our credit plans. I can answer in English, Urdu, or Roman Urdu!'
     }
   ]);
   const [isAssistantTyping, setIsAssistantTyping] = useState(false);
@@ -129,6 +129,16 @@ export default function Dashboard() {
     <div className="dashboard-container">
       {/* Sleek Custom Style overrides */}
       <style>{`
+        /* Hide global footer when dashboard is active */
+        .dashboard-container ~ footer {
+          display: none !important;
+        }
+
+        /* Disable body scroll when dashboard is active to prevent double scrollbars */
+        body:has(.dashboard-container) {
+          overflow: hidden !important;
+        }
+
         /* Floating Chat Button */
         .chat-bubble {
           position: fixed;
