@@ -134,9 +134,11 @@ export default function Dashboard() {
           display: none !important;
         }
 
-        /* Disable body scroll when dashboard is active to prevent double scrollbars */
-        body:has(.dashboard-container) {
-          overflow: hidden !important;
+        /* Disable body scroll on desktop when dashboard is active to prevent double scrollbars */
+        @media (min-width: 769px) {
+          body:has(.dashboard-container) {
+            overflow: hidden !important;
+          }
         }
 
         /* Floating Chat Button */
