@@ -24,7 +24,7 @@ export default function RootLayout({
           </div>
           <nav>
                <a href="/" className="logo" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-                 <img src="/logo.png" alt="VidFlow Logo" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+                 <img src="/logo.png?v=6" alt="VidFlow Logo" style={{ height: '49px', width: 'auto', objectFit: 'contain' }} />
                </a>
               <input type="checkbox" id="menu-toggle" style={{ display: 'none' }} />
               <label htmlFor="menu-toggle" className="nav-toggle" style={{ display: 'none', color: 'white' }}>
