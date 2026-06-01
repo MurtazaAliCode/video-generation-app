@@ -516,7 +516,7 @@ nav {
         background: var(--bg-card);
     }
     /* Hide History section on mobile */
-    .sidebar div:first-child { display: none; }
+    .sidebar > div:first-child { display: none; }
     .sidebar-item { display: none; }
 
     /* Show Credit Info nicely on mobile */
@@ -536,6 +536,12 @@ nav {
     }
     .sidebar > div:nth-child(2) > div:last-child {
         display: none; /* Hide "Next video: X credits" on mobile to save space */
+    }
+    .sidebar a {
+        margin-top: 0 !important;
+        padding: 0.5rem 0.8rem !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap;
     }
 
     .main-content { padding: 2rem 5%; }
