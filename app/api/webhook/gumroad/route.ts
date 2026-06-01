@@ -69,16 +69,31 @@ export async function POST(req: Request) {
     }
 
     // Identify user
-    const userId = parsedData.custom_fields
-      ? (() => {
-          try {
-            const cf = JSON.parse(parsedData.custom_fields);
-            return cf.clerk_user_id || parsedData.clerk_user_id || null;
-          } catch {
-            return parsedData.clerk_user_id || null;
-          }
-        })()
-      : parsedData.clerk_user_id || null;
+    const getClerkUserId = () => {
+      // 1. Try URL parameters first (most common for Gumroad redirect links)
+      if (parsedData['url_params[clerk_user_id]']) {
+        return parsedData['url_params[clerk_user_id]'];
+      }
+      
+      // 2. Try custom_fields
+      if (parsedData.custom_fields) {
+        try {
+          const cf = JSON.parse(parsedData.custom_fields);
+          if (cf.clerk_user_id) return cf.clerk_user_id;
+        } catch (e) {
+          // ignore parsing errors
+        }
+      }
+      
+      // 3. Try top-level field
+      if (parsedData.clerk_user_id) {
+        return parsedData.clerk_user_id;
+      }
+      
+      return null;
+    };
+
+    const userId = getClerkUserId();
 
     const customerEmail = parsedData.email || '';
     const permalink = (parsedData.permalink || '').toLowerCase();
