@@ -50,19 +50,21 @@ export async function POST(req: Request) {
       auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    // 3. Using Wan 2.1 (T2V-1.3B) for high-quality video generation
+    // 3. Using WaveSpeedAI's accelerated Wan 2.1 (T2V-14B) 720p for best of the best cinematic video quality
     let videoUrl = "";
     try {
         const output = await replicate.run(
-            "lucataco/wan2.1-t2v-1.3b:600985c4da1765c34538942b036ca6d506085a6b7d7f7e91185012543d839395",
+            "wavespeedai/wan-2.1-t2v-720p",
             {
                 input: {
                     prompt: prompt,
-                    resolution: "720p",
                     aspect_ratio: "16:9",
                     num_frames: Math.min(481, Math.floor((duration || 5) * 16) + 1), // 16 fps, (num_frames-1) divisible by 4
-                    guide_scale: 6,
-                    num_inference_steps: 40
+                    frames_per_second: 16,
+                    sample_steps: 30,
+                    sample_guide_scale: 5,
+                    sample_shift: 5,
+                    fast_mode: "Balanced"
                 }
             }
         );
