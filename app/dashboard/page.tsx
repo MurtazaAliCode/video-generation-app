@@ -5,11 +5,10 @@ import { useState, useEffect, useRef } from 'react';
 const VIDEO_OPTIONS = [
   { seconds: 5,  credits: 3,  label: "5 Seconds  — 3 Credits" },
   { seconds: 10, credits: 5,  label: "10 Seconds — 5 Credits" },
-  { seconds: 15, credits: 8,  label: "15 Seconds — 8 Credits" },
-  { seconds: 20, credits: 11, label: "20 Seconds — 11 Credits" },
-  { seconds: 30, credits: 16, label: "30 Seconds — 16 Credits" },
-  { seconds: 45, credits: 22, label: "45 Seconds — 22 Credits" },
-  { seconds: 59, credits: 28, label: "59 Seconds — 28 Credits" },
+  { seconds: 15, credits: 7,  label: "15 Seconds — 7 Credits" },
+  { seconds: 20, credits: 9,  label: "20 Seconds — 9 Credits" },
+  { seconds: 25, credits: 11, label: "25 Seconds — 11 Credits" },
+  { seconds: 30, credits: 13, label: "30 Seconds — 13 Credits" },
 ];
 
 export default function Dashboard() {
@@ -18,6 +17,7 @@ export default function Dashboard() {
   const [videoUrl, setVideoUrl] = useState("");
   const [selectedOption, setSelectedOption] = useState(VIDEO_OPTIONS[0]);
   const [credits, setCredits] = useState(15); // Default free credits
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // AI Assistant States
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -122,6 +122,28 @@ export default function Dashboard() {
       }]);
     } finally {
       setIsAssistantTyping(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!videoUrl) return;
+    setIsDownloading(true);
+    try {
+      const response = await fetch(videoUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vidflow-${Date.now()}.mp4`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error("CORS direct download blocked, falling back to new tab...", e);
+      window.open(videoUrl, '_blank');
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -547,6 +569,31 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        {videoUrl && !isGenerating && (
+          <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
+            <button
+              onClick={handleDownload}
+              className="btn-primary"
+              disabled={isDownloading}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.75rem 2rem",
+                background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+                boxShadow: "0 10px 25px rgba(6, 182, 212, 0.3)",
+                border: "none",
+                borderRadius: "8px",
+                fontWeight: 600,
+                cursor: "pointer",
+                opacity: isDownloading ? 0.7 : 1
+              }}
+            >
+              {isDownloading ? "⏳ Downloading..." : "📥 Download Video"}
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

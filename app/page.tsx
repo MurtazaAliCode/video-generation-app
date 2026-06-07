@@ -77,11 +77,10 @@ export default function Home() {
           {[
             { s: "5s",  c: 3  },
             { s: "10s", c: 5  },
-            { s: "15s", c: 8  },
-            { s: "20s", c: 11 },
-            { s: "30s", c: 16 },
-            { s: "45s", c: 22 },
-            { s: "59s", c: 28 },
+            { s: "15s", c: 7  },
+            { s: "20s", c: 9  },
+            { s: "25s", c: 11 },
+            { s: "30s", c: 13 },
           ].map((item) => (
             <div key={item.s} style={{
               background: "var(--bg-card)",
@@ -107,9 +106,9 @@ export default function Home() {
 
           {/* Starter Plan */}
           <div className="price-card">
-            <h3>Starter</h3>
-            <div className="price-value">$4<span>.99<span>/mo</span></span></div>
-            <div className="credits-count">50 Credits / Month</div>
+            <h3>Starter Pack</h3>
+            <div className="price-value">$4<span>.99</span></div>
+            <div className="credits-count">50 Credits (One-Time)</div>
             <ul className="features-list">
               <li>Up to 16 videos (5s each)</li>
               <li>Max 20s per video</li>
@@ -117,38 +116,38 @@ export default function Home() {
               <li>Standard Speed</li>
               <li>Email Support</li>
             </ul>
-            <PricingButton plan="starter" label="Choose Starter" className="btn-outline" />
+            <PricingButton plan="starter" label="Buy Starter Pack" className="btn-outline" />
           </div>
 
           {/* Pro Plan */}
           <div className="price-card popular">
             <div className="popular-tag">Best Value</div>
-            <h3>Pro</h3>
-            <div className="price-value">$14<span>.99<span>/mo</span></span></div>
-            <div className="credits-count">150 Credits / Month</div>
+            <h3>Pro Pack</h3>
+            <div className="price-value">$14<span>.99</span></div>
+            <div className="credits-count">150 Credits (One-Time)</div>
             <ul className="features-list">
               <li>Up to 50 videos (5s each)</li>
-              <li>Max 45s per video</li>
+              <li>Max 30s per video</li>
               <li>1080p Crystal Clear</li>
               <li>Priority Generation</li>
               <li>Commercial Rights</li>
             </ul>
-            <PricingButton plan="pro" label="Get Pro Now" className="btn-primary" />
+            <PricingButton plan="pro" label="Buy Pro Pack" className="btn-primary" />
           </div>
 
           {/* Elite Plan */}
           <div className="price-card">
-            <h3>Elite</h3>
-            <div className="price-value">$29<span>.99<span>/mo</span></span></div>
-            <div className="credits-count">350 Credits / Month</div>
+            <h3>Elite Pack</h3>
+            <div className="price-value">$29<span>.99</span></div>
+            <div className="credits-count">350 Credits (One-Time)</div>
             <ul className="features-list">
               <li>Up to 116 videos (5s each)</li>
-              <li>Max 59s per video</li>
+              <li>Max 30s per video</li>
               <li>4K AI Upscaling</li>
               <li>Instant Generation</li>
               <li>Dedicated Support</li>
             </ul>
-            <PricingButton plan="elite" label="Choose Elite" className="btn-outline" />
+            <PricingButton plan="elite" label="Buy Elite Pack" className="btn-outline" />
           </div>
 
         </div>

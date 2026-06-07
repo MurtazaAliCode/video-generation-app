@@ -8,11 +8,10 @@ export const dynamic = 'force-dynamic';
 const VIDEO_OPTIONS = [
   { seconds: 5,  credits: 3 },
   { seconds: 10, credits: 5 },
-  { seconds: 15, credits: 8 },
-  { seconds: 20, credits: 11 },
-  { seconds: 30, credits: 16 },
-  { seconds: 45, credits: 22 },
-  { seconds: 59, credits: 28 },
+  { seconds: 15, credits: 7 },
+  { seconds: 20, credits: 9 },
+  { seconds: 25, credits: 11 },
+  { seconds: 30, credits: 13 },
 ];
 
 export async function POST(req: Request) {
@@ -61,7 +60,7 @@ export async function POST(req: Request) {
                     prompt: prompt,
                     resolution: "720p",
                     aspect_ratio: "16:9",
-                    num_frames: Math.min(81, Math.floor((duration || 5) * 8)), // Approx conversion
+                    num_frames: Math.min(481, Math.floor((duration || 5) * 16) + 1), // 16 fps, (num_frames-1) divisible by 4
                     guide_scale: 6,
                     num_inference_steps: 40
                 }
