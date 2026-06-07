@@ -116,17 +116,17 @@ export async function POST(req: Request) {
     }
 
     // Plan mapping
-    let credits = 50;
+    let credits = 30;
     let plan = 'starter';
 
     if (permalink.includes('elite')) {
-      credits = 350;
+      credits = 140;
       plan = 'elite';
     } else if (permalink.includes('pro')) {
-      credits = 150;
+      credits = 65;
       plan = 'pro';
     } else {
-      credits = 50;
+      credits = 30;
       plan = 'starter';
     }
 

@@ -3,12 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 
 // Smart Credit System - profitable at every tier
 const VIDEO_OPTIONS = [
-  { seconds: 5,  credits: 3,  label: "5 Seconds  — 3 Credits" },
-  { seconds: 10, credits: 5,  label: "10 Seconds — 5 Credits" },
-  { seconds: 15, credits: 7,  label: "15 Seconds — 7 Credits" },
-  { seconds: 20, credits: 9,  label: "20 Seconds — 9 Credits" },
-  { seconds: 25, credits: 11, label: "25 Seconds — 11 Credits" },
-  { seconds: 30, credits: 13, label: "30 Seconds — 13 Credits" },
+  { seconds: 5,  credits: 5,  label: "5 Seconds  — 5 Credits" },
+  { seconds: 10, credits: 10, label: "10 Seconds — 10 Credits" },
+  { seconds: 15, credits: 15, label: "15 Seconds — 15 Credits" },
+  { seconds: 20, credits: 20, label: "20 Seconds — 20 Credits" },
+  { seconds: 25, credits: 25, label: "25 Seconds — 25 Credits" },
+  { seconds: 30, credits: 30, label: "30 Seconds — 30 Credits" },
 ];
 
 export default function Dashboard() {

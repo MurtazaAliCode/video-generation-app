@@ -25,19 +25,19 @@ VidFlow Knowledge Base:
 AI Video Model: VidFlow uses Wan 2.1 state-of-the-art Text-to-Video AI. It generates cinematic, hyper-realistic videos from text prompts.
 
 Video Lengths and Credits (one-time credit packs, credits never expire):
-5 seconds = 3 credits
-10 seconds = 5 credits
-15 seconds = 7 credits
-20 seconds = 9 credits
-25 seconds = 11 credits
-30 seconds = 13 credits (maximum duration)
+5 seconds = 5 credits
+10 seconds = 10 credits
+15 seconds = 15 credits
+20 seconds = 20 credits
+25 seconds = 25 credits
+30 seconds = 30 credits (maximum duration)
 Tip: For best quality and consistency, 5s to 15s clips work best. Longer clips can have continuity issues.
 
 Credit Packs (one-time purchase, credits never expire, carry forward until used):
 Free tier: 15 starter credits on signup.
-Starter Pack: $4.99, gives 50 credits.
-Pro Pack: $14.99, gives 150 credits.
-Elite Pack: $29.99, gives 350 credits.
+Starter Pack: $9.99, gives 30 credits.
+Pro Pack: $19.99, gives 65 credits.
+Elite Pack: $39.99, gives 140 credits.
 Credits do not expire monthly. They stay in your account until you use them.
 To buy credits, click "Buy More Credits" in the sidebar.
 
@@ -70,11 +70,11 @@ export async function POST(req: Request) {
       const lowerMsg = lastUserMsg.toLowerCase();
 
       if (lowerMsg.includes('credits') || lowerMsg.includes('cradit') || lowerMsg.includes('price') || lowerMsg.includes('plan')) {
-        reply = "Hamare paas 3 credit packs hain. Pehla Starter Pack $4.99 mein 50 credits. Doosra Pro Pack $14.99 mein 150 credits. Teesra Elite Pack $29.99 mein 350 credits. Credits kabhi expire nahi hote, jab tak aap khud use na karein tab tak safe rehte hain!";
+        reply = "Hamare paas 3 credit packs hain. Pehla Starter Pack $9.99 mein 30 credits. Doosra Pro Pack $19.99 mein 65 credits. Teesra Elite Pack $39.99 mein 140 credits. Credits kabhi expire nahi hote, jab tak aap khud use na karein tab tak safe rehte hain!";
       } else if (lowerMsg.includes('urdu') || lowerMsg.includes('roman') || lowerMsg.includes('zaban') || lowerMsg.includes('language')) {
         reply = "Ji bilkul! Aap Urdu, Roman Urdu, ya kisi bhi zaban mein baat kar sakte hain. Video prompt English mein likhna best hota hai kyunki AI English ko zyada achhi tarah samajhta hai. Main aap ka prompt English mein translate kar sakta hoon, bas batayein!";
       } else if (lowerMsg.includes('seconds') || lowerMsg.includes('time') || lowerMsg.includes('duration') || lowerMsg.includes('lambi') || lowerMsg.includes('sec')) {
-        reply = "VidFlow mein aap 5 seconds se lekar 30 seconds tak ki video bana sakte hain. 5 second ki video sirf 3 credits mein banti hai aur quality bhi best rehti hai. Jitni lambi video utna zyada credits lagenge.";
+        reply = "VidFlow mein aap 5 seconds se lekar 30 seconds tak ki video bana sakte hain. 5 second ki video 5 credits mein banti hai aur quality bhi best rehti hai. Jitni lambi video utna zyada credits lagenge.";
       } else {
         reply = "Salam! Main aapka VidFlow AI Guide hoon. Video prompts likhne mein madad chahiye? Ya platform ke baare mein kuch poochhna hai? Batayein!";
       }

@@ -6,12 +6,12 @@ import { prisma } from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 
 const VIDEO_OPTIONS = [
-  { seconds: 5,  credits: 3 },
-  { seconds: 10, credits: 5 },
-  { seconds: 15, credits: 7 },
-  { seconds: 20, credits: 9 },
-  { seconds: 25, credits: 11 },
-  { seconds: 30, credits: 13 },
+  { seconds: 5,  credits: 5 },
+  { seconds: 10, credits: 10 },
+  { seconds: 15, credits: 15 },
+  { seconds: 20, credits: 20 },
+  { seconds: 25, credits: 25 },
+  { seconds: 30, credits: 30 },
 ];
 
 export async function POST(req: Request) {

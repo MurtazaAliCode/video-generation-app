@@ -75,12 +75,12 @@ export default function Home() {
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "center", maxWidth: "800px", margin: "0 auto" }}>
           {[
-            { s: "5s",  c: 3  },
-            { s: "10s", c: 5  },
-            { s: "15s", c: 7  },
-            { s: "20s", c: 9  },
-            { s: "25s", c: 11 },
-            { s: "30s", c: 13 },
+            { s: "5s",  c: 5  },
+            { s: "10s", c: 10 },
+            { s: "15s", c: 15 },
+            { s: "20s", c: 20 },
+            { s: "25s", c: 25 },
+            { s: "30s", c: 30 },
           ].map((item) => (
             <div key={item.s} style={{
               background: "var(--bg-card)",
@@ -107,12 +107,12 @@ export default function Home() {
           {/* Starter Plan */}
           <div className="price-card">
             <h3>Starter Pack</h3>
-            <div className="price-value">$4<span>.99</span></div>
-            <div className="credits-count">50 Credits (One-Time)</div>
+            <div className="price-value">$9<span>.99</span></div>
+            <div className="credits-count">30 Credits (One-Time)</div>
             <ul className="features-list">
-              <li>Up to 16 videos (5s each)</li>
-              <li>Max 20s per video</li>
-              <li>720p Resolution</li>
+              <li>Up to 6 videos (5s each)</li>
+              <li>Max 30s per video</li>
+              <li>720p Cinematic HD</li>
               <li>Standard Speed</li>
               <li>Email Support</li>
             </ul>
@@ -123,12 +123,12 @@ export default function Home() {
           <div className="price-card popular">
             <div className="popular-tag">Best Value</div>
             <h3>Pro Pack</h3>
-            <div className="price-value">$14<span>.99</span></div>
-            <div className="credits-count">150 Credits (One-Time)</div>
+            <div className="price-value">$19<span>.99</span></div>
+            <div className="credits-count">65 Credits (One-Time)</div>
             <ul className="features-list">
-              <li>Up to 50 videos (5s each)</li>
+              <li>Up to 13 videos (5s each)</li>
               <li>Max 30s per video</li>
-              <li>1080p Crystal Clear</li>
+              <li>720p Cinematic HD</li>
               <li>Priority Generation</li>
               <li>Commercial Rights</li>
             </ul>
@@ -138,12 +138,12 @@ export default function Home() {
           {/* Elite Plan */}
           <div className="price-card">
             <h3>Elite Pack</h3>
-            <div className="price-value">$29<span>.99</span></div>
-            <div className="credits-count">350 Credits (One-Time)</div>
+            <div className="price-value">$39<span>.99</span></div>
+            <div className="credits-count">140 Credits (One-Time)</div>
             <ul className="features-list">
-              <li>Up to 116 videos (5s each)</li>
+              <li>Up to 28 videos (5s each)</li>
               <li>Max 30s per video</li>
-              <li>4K AI Upscaling</li>
+              <li>720p Cinematic HD</li>
               <li>Instant Generation</li>
               <li>Dedicated Support</li>
             </ul>
