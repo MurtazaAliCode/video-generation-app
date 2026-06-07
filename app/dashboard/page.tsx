@@ -571,26 +571,59 @@ export default function Dashboard() {
         </div>
 
         {videoUrl && !isGenerating && (
-          <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "center" }}>
+          <div style={{ marginTop: "1.75rem", display: "flex", justifyContent: "center" }}>
             <button
               onClick={handleDownload}
-              className="btn-primary"
               disabled={isDownloading}
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.75rem 2rem",
-                background: "linear-gradient(135deg, #06b6d4, #3b82f6)",
-                boxShadow: "0 10px 25px rgba(6, 182, 212, 0.3)",
-                border: "none",
-                borderRadius: "8px",
+                gap: "0.6rem",
+                padding: "0.8rem 2.25rem",
+                background: isDownloading
+                  ? "rgba(99,102,241,0.15)"
+                  : "linear-gradient(135deg, var(--accent-1), var(--accent-2))",
+                boxShadow: isDownloading
+                  ? "none"
+                  : "0 8px 32px rgba(99, 102, 241, 0.35), 0 0 0 1px rgba(139,92,246,0.2) inset",
+                border: "1px solid rgba(139,92,246,0.3)",
+                borderRadius: "10px",
                 fontWeight: 600,
-                cursor: "pointer",
-                opacity: isDownloading ? 0.7 : 1
+                fontSize: "0.9rem",
+                color: "white",
+                cursor: isDownloading ? "not-allowed" : "pointer",
+                opacity: isDownloading ? 0.65 : 1,
+                letterSpacing: "0.02em",
+                transition: "all 0.25s ease",
+                backdropFilter: "blur(8px)",
+              }}
+              onMouseEnter={e => {
+                if (!isDownloading) {
+                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+                  (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 12px 40px rgba(99, 102, 241, 0.5), 0 0 0 1px rgba(139,92,246,0.3) inset";
+                }
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = isDownloading ? "none" : "0 8px 32px rgba(99, 102, 241, 0.35), 0 0 0 1px rgba(139,92,246,0.2) inset";
               }}
             >
-              {isDownloading ? "⏳ Downloading..." : "📥 Download Video"}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              {isDownloading ? "Downloading..." : "Download Video"}
             </button>
           </div>
         )}
