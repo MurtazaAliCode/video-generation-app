@@ -50,20 +50,22 @@ export async function POST(req: Request) {
       auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    // 3. Temporarily using a lightweight model for free trial testing
+    // 3. Temporarily using Zeroscope for free trial testing
     let videoUrl = "";
     try {
         const output = await replicate.run(
-            "cjwbw/damo-text-to-video",
+            "anotherjesse/zeroscope-v2-xl",
             {
                 input: {
                     prompt: prompt,
-                    num_frames: 16,
-                    fps: 8
+                    num_frames: 24,
+                    fps: 8,
+                    width: 576,
+                    height: 320
                 }
             }
         );
-        videoUrl = (output as any) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
+        videoUrl = (Array.isArray(output) ? output[0] : (output as any)) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
         
         /* 
         // RESTORE THIS LATER when billing card is attached to Replicate:
