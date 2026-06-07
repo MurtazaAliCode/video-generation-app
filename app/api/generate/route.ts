@@ -50,9 +50,23 @@ export async function POST(req: Request) {
       auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    // 3. Using WaveSpeedAI's accelerated Wan 2.1 (T2V-14B) 720p for best of the best cinematic video quality
+    // 3. Temporarily using a lightweight model for free trial testing
     let videoUrl = "";
     try {
+        const output = await replicate.run(
+            "cjwbw/damo-text-to-video",
+            {
+                input: {
+                    prompt: prompt,
+                    num_frames: 16,
+                    fps: 8
+                }
+            }
+        );
+        videoUrl = (output as any) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
+        
+        /* 
+        // RESTORE THIS LATER when billing card is attached to Replicate:
         const output = await replicate.run(
             "wavespeedai/wan-2.1-t2v-720p",
             {
@@ -68,7 +82,8 @@ export async function POST(req: Request) {
                 }
             }
         );
-        videoUrl = (output as any) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
+        videoUrl = (output as any);
+        */
     } catch (apiError: any) {
         console.error("Replicate API Error:", apiError);
         return NextResponse.json({ error: `Replicate AI Error: ${apiError.message || apiError}` }, { status: 500 });
