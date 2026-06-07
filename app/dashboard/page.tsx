@@ -86,10 +86,14 @@ export default function Dashboard() {
         body: JSON.stringify({ prompt, duration: selectedOption.seconds }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to generate video");
+        setCredits(prev => prev + selectedOption.credits); // Rollback
+        return;
+      }
       if (data.videoUrl) {
         setVideoUrl(data.videoUrl);
       } else {
-        // Fallback demo video
         setVideoUrl("https://media.w3.org/2010/05/sintel/trailer.mp4");
       }
 
