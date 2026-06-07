@@ -50,25 +50,9 @@ export async function POST(req: Request) {
       auth: process.env.REPLICATE_API_TOKEN,
     });
 
-    // 3. Temporarily using Zeroscope for free trial testing
+    // 3. Using WaveSpeedAI's accelerated Wan 2.1 (T2V-14B) 720p for best of the best cinematic video quality
     let videoUrl = "";
     try {
-        const output = await replicate.run(
-            "anotherjesse/zeroscope-v2-xl:9f747673945c62801b13b84701c783929c0ee784e4748ec062204894dda1a351",
-            {
-                input: {
-                    prompt: prompt,
-                    num_frames: 24,
-                    fps: 8,
-                    width: 576,
-                    height: 320
-                }
-            }
-        );
-        videoUrl = (Array.isArray(output) ? output[0] : (output as any)) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
-        
-        /* 
-        // RESTORE THIS LATER when billing card is attached to Replicate:
         const output = await replicate.run(
             "wavespeedai/wan-2.1-t2v-720p",
             {
@@ -84,8 +68,7 @@ export async function POST(req: Request) {
                 }
             }
         );
-        videoUrl = (output as any);
-        */
+        videoUrl = (output as any) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
     } catch (apiError: any) {
         console.error("Replicate API Error:", apiError);
         return NextResponse.json({ error: `Replicate AI Error: ${apiError.message || apiError}` }, { status: 500 });
