@@ -71,8 +71,7 @@ export async function POST(req: Request) {
         videoUrl = (output as any) || "https://media.w3.org/2010/05/sintel/trailer.mp4";
     } catch (apiError: any) {
         console.error("Replicate API Error:", apiError);
-        // Fallback for demo if API fails or token missing
-        videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4";
+        return NextResponse.json({ error: `Replicate AI Error: ${apiError.message || apiError}` }, { status: 500 });
     }
 
     // 4. Deduct credits and save video to DB
