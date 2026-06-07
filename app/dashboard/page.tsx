@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [selectedOption, setSelectedOption] = useState(VIDEO_OPTIONS[0]);
   const [credits, setCredits] = useState(15); // Default free credits
   const [isDownloading, setIsDownloading] = useState(false);
+  const [videoHistory, setVideoHistory] = useState<Array<{ id: string; prompt: string; videoUrl: string | null; cost: number; status: string; createdAt: string }>>([]);
 
   // AI Assistant States
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -39,7 +40,19 @@ export default function Dashboard() {
     }
   }, [chatMessages, isAssistantTyping]);
 
-  // Fetch actual credits from database on mount
+  // Fetch credits and history from database on mount
+  const fetchHistory = async () => {
+    try {
+      const res = await fetch('/api/videos');
+      if (res.ok) {
+        const data = await res.json();
+        setVideoHistory(data.videos || []);
+      }
+    } catch (e) {
+      console.error('Error fetching history:', e);
+    }
+  };
+
   useEffect(() => {
     async function fetchCredits() {
       try {
@@ -53,6 +66,7 @@ export default function Dashboard() {
       }
     }
     fetchCredits();
+    fetchHistory();
   }, []);
 
   const handleGenerate = async () => {
@@ -79,14 +93,16 @@ export default function Dashboard() {
         setVideoUrl("https://media.w3.org/2010/05/sintel/trailer.mp4");
       }
 
-      // Re-fetch user details to make sure database credits are in sync
+      // Re-fetch user details and history to sync
       const userRes = await fetch('/api/user');
       if (userRes.ok) {
         const userData = await userRes.json();
         setCredits(userData.credits);
       }
+      await fetchHistory();
     } catch (e) {
       setVideoUrl("https://media.w3.org/2010/05/sintel/trailer.mp4");
+      await fetchHistory();
     } finally {
       setIsGenerating(false);
     }
@@ -462,9 +478,43 @@ export default function Dashboard() {
 
       {/* Sidebar */}
       <aside className="sidebar">
-        <div style={{ flex: 1, marginTop: "4rem" }}>
-          <p style={{ color: "var(--text-secondary)", textTransform: "uppercase", fontSize: "0.7rem", marginBottom: "1rem" }}>History</p>
-          <div className="sidebar-item" style={{ marginBottom: "1rem", height: "40px", background: "rgba(255,255,255,0.05)", padding: "10px", borderRadius: "8px", color: "var(--text-secondary)", fontSize: "0.8rem", display: "flex", alignItems: "center" }}>Cyberpunk City...</div>
+        <div style={{ flex: 1, marginTop: "4rem", overflowY: "auto", maxHeight: "calc(100vh - 260px)" }}>
+          <p style={{ color: "var(--text-secondary)", textTransform: "uppercase", fontSize: "0.7rem", marginBottom: "1rem", letterSpacing: "0.05em" }}>History</p>
+          {videoHistory.length === 0 ? (
+            <div style={{ color: "var(--text-secondary)", fontSize: "0.78rem", textAlign: "center", padding: "1rem 0", opacity: 0.6 }}>
+              No videos yet. Generate your first one!
+            </div>
+          ) : (
+            videoHistory.map((v) => (
+              <div
+                key={v.id}
+                onClick={() => v.videoUrl && setVideoUrl(v.videoUrl)}
+                style={{
+                  marginBottom: "0.6rem",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  padding: "0.6rem 0.75rem",
+                  borderRadius: "8px",
+                  cursor: v.videoUrl ? "pointer" : "default",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={e => { if (v.videoUrl) (e.currentTarget as HTMLDivElement).style.background = "rgba(99,102,241,0.12)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)"; }}
+              >
+                <div style={{ color: "var(--text-primary)", fontSize: "0.78rem", fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {v.prompt.length > 32 ? v.prompt.slice(0, 32) + "..." : v.prompt}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.3rem", alignItems: "center" }}>
+                  <span style={{ color: "var(--text-secondary)", fontSize: "0.68rem" }}>
+                    {new Date(v.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span style={{ color: "var(--accent-2)", fontSize: "0.68rem", fontWeight: 600 }}>
+                    {v.cost} cr
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Credit Info */}
