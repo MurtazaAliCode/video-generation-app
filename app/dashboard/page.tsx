@@ -145,21 +145,22 @@ export default function Dashboard() {
     if (!videoUrl) return;
     setIsDownloading(true);
     try {
-      const response = await fetch(videoUrl);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const filename = `vidflow-${Date.now()}.mp4`;
+      const proxyUrl = `/api/download?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(filename)}`;
+      
       const a = document.createElement('a');
-      a.href = url;
-      a.download = `vidflow-${Date.now()}.mp4`;
+      a.href = proxyUrl;
+      a.setAttribute('download', filename);
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
     } catch (e) {
-      console.error("CORS direct download blocked, falling back to new tab...", e);
+      console.error("Download failed, falling back to open in tab:", e);
       window.open(videoUrl, '_blank');
     } finally {
-      setIsDownloading(false);
+      setTimeout(() => {
+        setIsDownloading(false);
+      }, 2000);
     }
   };
 
